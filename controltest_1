@@ -1,0 +1,45 @@
+
+ctrl = py.carla.VehicleControl();
+ctrl.throttle = 0.8;
+ctrl.steer = 0.0;
+ctrl.brake = 0.0;
+
+% ========= 自车开启自动驾驶（或手动控制）=========
+vehicle_ego.set_autopilot(true);  % 也可以 apply_control()
+
+% ========= 循环采样输出速度与距离 =========
+fprintf("⏱️ 开始模拟并实时反馈车辆状态：\n\n");
+
+for i = 1:200
+    world.wait_for_tick();
+
+
+    vehicle_front.apply_control(ctrl);
+    vehicle_rear.apply_control(ctrl);
+
+
+
+    % 获取位置
+    ego_loc   = vehicle_ego.get_location();
+    front_loc = vehicle_front.get_location();
+    rear_loc  = vehicle_rear.get_location();
+
+    % 获取速度
+    ego_vel   = vehicle_ego.get_velocity();
+    front_vel = vehicle_front.get_velocity();
+    rear_vel  = vehicle_rear.get_velocity();
+
+    % 速度（m/s）
+    v_ego   = norm([double(ego_vel.x), double(ego_vel.y)]);
+    v_front = norm([double(front_vel.x), double(front_vel.y)]);
+    v_rear  = norm([double(rear_vel.x), double(rear_vel.y)]);
+
+    % 距离（欧氏距离）
+    dist_front = norm([double(front_loc.x - ego_loc.x), double(front_loc.y - ego_loc.y)]);
+    dist_rear  = norm([double(ego_loc.x - rear_loc.x),  double(ego_loc.y - rear_loc.y)]);
+
+    % 输出
+    fprintf("🚗 自车速度：%.1f m/s\n", v_ego);
+    fprintf("🚙 前车速度：%.1f m/s | 距离：%.1f m\n", v_front, dist_front);
+    fprintf("🚗 后车速度：%.1f m/s | 距离：%.1f m\n\n", v_rear, dist_rear);
+end
