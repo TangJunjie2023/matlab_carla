@@ -1,0 +1,27 @@
+
+
+% ========= 获取车辆 Blueprint =========
+model3 = blueprints.filter('vehicle.tesla.model3');
+bp = cell(py.list(model3));  % 转换为 MATLAB cell 数组
+bp = bp{1};                  % ✅ 正确地取出第一个 blueprint
+
+
+% ========= 设定 Spawn 点 =========
+spawn_points = py.list(map.get_spawn_points());
+ego_spawn  = spawn_points{99};
+ego_loc = ego_spawn.location;
+
+% 前车：自车前方 50m
+front_spawn = py.carla.Transform( ...
+    py.carla.Location(ego_loc.x , ego_loc.y + 100, ego_loc.z), ...
+    ego_spawn.rotation);
+
+% 后车：自车后方 25m
+rear_spawn = py.carla.Transform( ...
+    py.carla.Location(ego_loc.x , ego_loc.y -50, ego_loc.z), ...
+    ego_spawn.rotation);
+
+% ========= 生成车辆 =========
+vehicle_ego = world.spawn_actor(bp, ego_spawn);
+vehicle_front = world.spawn_actor(bp, front_spawn);
+vehicle_rear = world.spawn_actor(bp, rear_spawn);
