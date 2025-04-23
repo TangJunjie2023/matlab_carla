@@ -1,0 +1,46 @@
+client = py.carla.Client('localhost', int32(2000));
+client.set_timeout(60.0);
+
+% 加载地图 Town04（高速路直道地图）
+world = client.load_world('Town04');
+
+map = world.get_map();
+disp("Connected to: " + string(map.name));
+
+
+
+
+
+
+
+
+
+
+%cmd
+.\CarlaUE4.exe -quality-level=Low
+
+
+
+
+
+
+
+%matlab
+terminate(pyenv);   % 终止旧的 Python 会话
+pyenv('Version', 'D:\python39\python.exe');  % 替换成你用的 python 路径
+
+
+
+pyenv('Version', 'D:\python39\python.EXE', 'ExecutionMode', 'OutOfProcess');
+py.list({'trigger'});
+
+
+
+
+
+
+
+
+
+%cmd查看监控
+netstat -ano | findstr :2000
