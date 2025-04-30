@@ -27,6 +27,8 @@ while vehicle is None:
 
 print(f"✅ Vehicle found: {vehicle.type_id}")
 agent = BehaviorAgent(vehicle, behavior="normal")
+agent.set_target_speed(100) 
+
 
 print("✅ BehaviorAgent running...")
 
