@@ -1,0 +1,57 @@
+model3 = blueprints.filter('vehicle.tesla.model3');
+bp = cell(py.list(model3));
+bp = bp{1};
+
+spawn_points = py.list(map.get_spawn_points());
+ego_spawn  = spawn_points{99};  % 假设第99个spawn点
+ego_loc = ego_spawn.location;
+
+% ==== 生成自车 ====
+vehicle_ego = world.spawn_actor(bp, ego_spawn);
+
+% ==== 生成前后车 ====
+front_spawn = py.carla.Transform( ...
+    py.carla.Location(ego_loc.x + 3.5, ego_loc.y + 50, ego_loc.z), ... % 前方 50m 左车道
+    ego_spawn.rotation);
+rear_spawn = py.carla.Transform( ...
+    py.carla.Location(ego_loc.x + 3.5, ego_loc.y - 30, ego_loc.z), ... % 后方 30m 左车道
+    ego_spawn.rotation);
+
+vehicle_front = world.spawn_actor(bp, front_spawn);
+vehicle_rear  = world.spawn_actor(bp, rear_spawn);
+
+
+
+
+% ========== 启动 Python 控制器（后台运行） ==========
+python_path = 'D:\python39\python.exe';
+script_path = 'D:\CARLA\CARLA_0.9.15\WindowsNoEditor\PythonAPI\my_agent\behavior_agent_server.py';
+system(['start cmd /K "cd /d ', fileparts(script_path), ' && ', python_path, ' ', script_path, '"']);
+
+disp("✅ Python BehaviorAgent 控制器已启动");
+
+
+pause(10); 
+%vehicle_front.set_autopilot(true);
+%vehicle_rear.set_autopilot(true);
+
+
+% ==== 定义初速度（以世界坐标 x/y 方向为主）====
+v_init = 10;  % 初始速度 10 m/s，假设沿正Y方向行驶
+
+v_vector = py.carla.Vector3D(0, v_init, 0);
+
+%vehicle_ego.set_target_velocity(v_vector);
+vehicle_front.set_target_velocity(v_vector);
+vehicle_rear.set_target_velocity(v_vector);
+
+
+% ========== 等待 Python 初始化（例如等待 BehaviorAgent ready） ==========
+pause(10);  % 可按实际调整，确保 BehaviorAgent 进入监听状态
+
+% ========== 写入控制命令（如变道） ==========
+control_path = 'D:\CARLA\CARLA_0.9.15\WindowsNoEditor\PythonAPI\my_agent\control.txt';
+fid = fopen(control_path, 'w');
+fprintf(fid, 'change_lane_left');   % ✅ 可换成 'change_lane_right' 或 'stop'
+fclose(fid);
+disp("↪️ MATLAB 写入左变道命令");
